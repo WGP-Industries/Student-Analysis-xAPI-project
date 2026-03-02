@@ -1,25 +1,25 @@
 {
-  "name": "ai-test",
+  "name": "ai-test-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
     "preview": "vite preview",
-    "server": "node server.js",
-    "server:dev": "nodemon server.js",
-    "dev:all": "concurrently \"npm run dev\" \"npm run server:dev\""
+    "lint": "eslint ."
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.11.2",
+    "@tailwindcss/vite": "^4.2.1",
     "@xapi/xapi": "^3.0.2",
-    "cors": "^2.8.6",
-    "dotenv": "^16.4.7",
-    "express": "^5.2.1",
-    "node-fetch": "^3.3.2",
+    "lucide-react": "^0.575.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-hot-toast": "^2.6.0",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.13.1",
+    "tailwindcss": "^4.2.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
@@ -27,12 +27,10 @@
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
-    "concurrently": "^9.1.2",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
-    "nodemon": "^3.1.9",
     "vite": "^7.2.4"
   }
 }
