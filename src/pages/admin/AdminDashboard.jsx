@@ -1,19 +1,44 @@
 import { useEffect, useState } from "react";
 import api from "../../configs/api";
 
+// Deterministic colour from a palette based on string hash
+const GROUP_PALETTE = [
+  "bg-gold",
+  "bg-blue-400",
+  "bg-emerald-400",
+  "bg-purple-400",
+  "bg-rose-400",
+  "bg-cyan-400",
+  "bg-orange-400",
+  "bg-pink-400",
+];
+const groupColor = (name = "") => {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return GROUP_PALETTE[h % GROUP_PALETTE.length];
+};
+
+const STAGE_COLOURS = {
+  Planning: "bg-blue-400",
+  Exploration: "bg-purple-400",
+  Construction: "bg-amber-400",
+  Testing: "bg-emerald-400",
+  Reflection: "bg-rose-400",
+};
+
 const StatCard = ({ label, value, sub }) => (
   <div className="bg-[#111827] border border-white/8 rounded-xl px-6 py-5 flex flex-col gap-1">
     <p className="text-[0.68rem] font-medium tracking-widest uppercase text-[#4a5168]">
       {label}
     </p>
     <p className="font-display text-3xl text-[#e8eaf0]">{value ?? "-"}</p>
-    {sub && <p className="text-xs text-[#4a5168]">{sub}</p>}
+    {sub && <p className="text-xs text-[#7b8399]">{sub}</p>}
   </div>
 );
 
 const BarRow = ({ label, value, max, color = "bg-gold" }) => (
   <div className="flex items-center gap-3">
-    <span className="text-xs text-[#7b8399] w-24 shrink-0 truncate">
+    <span className="text-xs text-[#7b8399] w-28 shrink-0 truncate">
       {label}
     </span>
     <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
@@ -26,29 +51,17 @@ const BarRow = ({ label, value, max, color = "bg-gold" }) => (
   </div>
 );
 
-const GROUP_COLORS = {
-  "group-a": "bg-gold",
-  "group-b": "bg-blue-400",
-  "group-c": "bg-emerald-400",
-};
-
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetch = async () => {
-      try {
-        const { data } = await api.get("/api/xapi/admin/stats");
-        setStats(data);
-      } catch (err) {
-        setError(err.response?.data?.message || err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetch();
+    api
+      .get("/api/xapi/admin/stats")
+      .then(({ data }) => setStats(data))
+      .catch((err) => setError(err.response?.data?.message || err.message))
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) {
@@ -58,7 +71,6 @@ const AdminDashboard = () => {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="px-4 py-3 bg-[#e05c5c]/10 border border-[#e05c5c]/25 rounded-lg text-sm text-[#e05c5c]">
@@ -72,14 +84,16 @@ const AdminDashboard = () => {
     statementsByCourse,
     statementsByGroup,
     statementsByVerb,
+    statementsByStage,
     recentStatements,
   } = stats;
+
   const maxVerb = statementsByVerb?.[0]?.count ?? 1;
   const maxCourse = Math.max(
     ...(statementsByCourse?.map((c) => c.count) ?? [1]),
   );
   const maxGroup = Math.max(...(statementsByGroup?.map((g) => g.count) ?? [1]));
-
+  const maxStage = Math.max(...(statementsByStage?.map((s) => s.count) ?? [1]));
   const syncPct = totals.statements
     ? Math.round((totals.lrsSynced / totals.statements) * 100)
     : 0;
@@ -88,7 +102,7 @@ const AdminDashboard = () => {
     <div className="flex flex-col gap-8">
       <div>
         <h1 className="font-display text-2xl text-[#e8eaf0]">Overview</h1>
-        <p className="text-sm text-[#4a5168] mt-1">
+        <p className="text-sm text-[#7b8399] mt-1">
           Platform activity at a glance
         </p>
       </div>
@@ -109,6 +123,7 @@ const AdminDashboard = () => {
         />
       </div>
 
+      {/* By course / group / verbs */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* By course */}
         <div className="bg-[#111827] border border-white/8 rounded-xl p-6 flex flex-col gap-4">
@@ -131,7 +146,7 @@ const AdminDashboard = () => {
           )}
         </div>
 
-        {/* By group */}
+        {/* By group - dynamic colours from name hash */}
         <div className="bg-[#111827] border border-white/8 rounded-xl p-6 flex flex-col gap-4">
           <p className="text-[0.68rem] font-medium tracking-widest uppercase text-[#4a5168]">
             Statements by Group
@@ -141,10 +156,10 @@ const AdminDashboard = () => {
               {statementsByGroup.map((g) => (
                 <BarRow
                   key={g._id}
-                  label={g._id.replace("group-", "Group ").toUpperCase()}
+                  label={g.name}
                   value={g.count}
                   max={maxGroup}
-                  color={GROUP_COLORS[g._id] ?? "bg-gold"}
+                  color={groupColor(g.name)}
                 />
               ))}
             </div>
@@ -175,7 +190,40 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Recent activity - last 7 days */}
+      {/* By stage */}
+      {statementsByStage?.length > 0 && (
+        <div className="bg-[#111827] border border-white/8 rounded-xl p-6 flex flex-col gap-4">
+          <p className="text-[0.68rem] font-medium tracking-widest uppercase text-[#4a5168]">
+            Statements by Stage
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {statementsByStage.map((s) => {
+              const pct = Math.round((s.count / maxStage) * 100);
+              return (
+                <div
+                  key={s._id}
+                  className="flex flex-col gap-2 px-4 py-3 bg-white/2 border border-white/5 rounded-lg"
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium text-[#e8eaf0]">
+                      {s._id}
+                    </p>
+                    <span className="text-xs text-[#4a5168]">{s.count}</span>
+                  </div>
+                  <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${STAGE_COLOURS[s._id] ?? "bg-gold"} rounded-full transition-all duration-700`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Daily chart */}
       {recentStatements?.length > 0 && (
         <div className="bg-[#111827] border border-white/8 rounded-xl p-6 flex flex-col gap-4">
           <p className="text-[0.68rem] font-medium tracking-widest uppercase text-[#4a5168]">

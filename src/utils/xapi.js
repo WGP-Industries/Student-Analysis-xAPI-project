@@ -16,6 +16,10 @@ const FALLBACK_VERB = {
     display: { "en-US": "experienced" },
 };
 
+// Extension URIs for pedagogical metadata attached to every project statement.
+const EXT_STAGE = "https://example.edu/xapi/extensions/pedagogical-stage";
+const EXT_SCENARIO = "https://example.edu/xapi/extensions/learner-scenario";
+
 export const getGroupActivity = (groupId, groups) => {
     const group = groups.find((g) => g.id === groupId);
     return {
@@ -55,15 +59,19 @@ export const buildStatement = ({ verb, data, userData, groups }) => {
     };
 
     const contextActivities = {};
-    if (userData?.group) {
-        contextActivities.grouping = [getGroupActivity(userData.group, groups)];
-    }
+    if (userData?.group) contextActivities.grouping = [getGroupActivity(userData.group, groups)];
     if (data.grouping) contextActivities.grouping = [data.grouping];
     if (data.parent) contextActivities.parent = [data.parent];
     if (data.category) contextActivities.category = [data.category];
 
+    // Attach pedagogical stage and learner scenario to context.extensions.
+    // These are passed in from StatementBuilder when submitting a project statement.
+    const extensions = { ...(data.extensions || {}) };
+    if (data.stage) extensions[EXT_STAGE] = data.stage;
+    if (data.scenario) extensions[EXT_SCENARIO] = data.scenario;
+
     const context = {
-        extensions: data.extensions || {},
+        extensions,
         ...(Object.keys(contextActivities).length ? { contextActivities } : {}),
     };
 

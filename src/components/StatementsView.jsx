@@ -1,18 +1,31 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import api from "../configs/api";
-import { COURSES } from "../utils/constants";
 
-const formatGroup = (group) =>
-  group
-    ? group.replace("group-", "Group ").replace(/\b\w/g, (c) => c.toUpperCase())
-    : "N/A";
-
+const getGroup = (s) => s.group?.name ?? "N/A";
 const getUsername = (s) =>
   s.user?.username ?? s.rawStatement?.actor?.name ?? "Unknown";
-const getGroup = (s) => formatGroup(s.group);
 const getVerb = (s) => s.verb?.display ?? "Unknown";
-const getDescription = (s) => s.description || "-";
+const getDesc = (s) => s.description || "-";
+
+const STAGE_COLOURS = {
+  Planning: "bg-blue-500/10   text-blue-300   border-blue-500/20",
+  Exploration: "bg-purple-500/10 text-purple-300 border-purple-500/20",
+  Construction: "bg-amber-500/10  text-amber-300  border-amber-500/20",
+  Testing: "bg-green-500/10  text-green-300  border-green-500/20",
+  Reflection: "bg-rose-500/10   text-rose-300   border-rose-500/20",
+};
+
+const StageBadge = ({ stage }) =>
+  stage ? (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded text-[0.65rem] font-medium border whitespace-nowrap ${STAGE_COLOURS[stage] ?? "bg-white/5 text-[#7b8399] border-white/10"}`}
+    >
+      {stage}
+    </span>
+  ) : (
+    <span className="text-[#7b8399]">-</span>
+  );
 
 const StatementsView = () => {
   const { enrollments } = useSelector((s) => s.auth);
@@ -38,24 +51,21 @@ const StatementsView = () => {
     fetchStatements();
   }, []);
 
-  // Filter by selected course tab
   const filtered =
     activeCourse === "all"
       ? statements
-      : statements.filter((s) => {
-          const code = s.course?.courseCode?.toLowerCase();
-          return code === activeCourse.toLowerCase();
-        });
+      : statements.filter(
+          (s) => s.course?.courseCode?.toLowerCase() === activeCourse,
+        );
 
-  // Only show tabs for courses the user is actually enrolled in
-  const enrolledCourseCodes = enrollments.map((e) =>
-    e.course?.courseCode?.toLowerCase(),
-  );
-  const visibleCourses = COURSES.filter((c) =>
-    enrolledCourseCodes.includes(c.id),
-  );
+  // Derive visible course tabs from enrollments - no COURSES constant needed
+  const visibleCourses = enrollments
+    .filter((e) => e.course?.courseCode)
+    .map((e) => ({
+      id: e.course.courseCode.toLowerCase(),
+      label: e.course.courseCode.replace("COMP", "COMP "),
+    }));
 
-  // Find what group the user is in for the active course (for the heading)
   const activeEnrollment = enrollments.find(
     (e) => e.course?.courseCode?.toLowerCase() === activeCourse,
   );
@@ -67,8 +77,8 @@ const StatementsView = () => {
         <div>
           <h2 className="font-display text-2xl text-[#e8eaf0]">Statements</h2>
           {activeEnrollment && (
-            <p className="text-xs text-[#4a5168] mt-1">
-              Showing {formatGroup(activeEnrollment.group)} ·{" "}
+            <p className="text-xs text-[#7b8399] mt-1">
+              Showing {activeEnrollment.group?.name ?? "your group"} ·{" "}
               {activeEnrollment.course?.name}
             </p>
           )}
@@ -91,7 +101,7 @@ const StatementsView = () => {
         </button>
       </div>
 
-      {/* Course filter tabs */}
+      {/* Course tabs */}
       {visibleCourses.length > 0 && (
         <div className="flex gap-1 p-1 bg-white/3 rounded-lg w-fit">
           <TabButton
@@ -106,7 +116,7 @@ const StatementsView = () => {
               active={activeCourse === c.id}
               onClick={() => setActiveCourse(c.id)}
             >
-              {c.id.toUpperCase().replace("COMP", "COMP ")}
+              {c.label}
             </TabButton>
           ))}
         </div>
@@ -122,8 +132,8 @@ const StatementsView = () => {
       {/* Empty */}
       {!loading && !error && filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center bg-[#111827] border border-white/8 rounded-2xl">
-          <p className="text-[#4a5168] text-sm">No statements found yet.</p>
-          <p className="text-[#4a5168]/60 text-xs mt-1">
+          <p className="text-[#7b8399] text-sm">No statements found yet.</p>
+          <p className="text-[#7b8399]/60 text-xs mt-1">
             {enrollments.length === 0
               ? "Select a group in the Create Statement tab to get started."
               : "Submit a statement from the Create Statement tab."}
@@ -137,16 +147,22 @@ const StatementsView = () => {
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="bg-[#1a2235]">
-                {["Course", "Group", "User", "Verb", "Description", "Date"].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      className="text-left px-4 py-3 text-[0.72rem] font-medium tracking-[0.09em] uppercase text-[#4a5168] border-b border-white/8 whitespace-nowrap"
-                    >
-                      {h}
-                    </th>
-                  ),
-                )}
+                {[
+                  "Course",
+                  "Group",
+                  "User",
+                  "Verb",
+                  "Stage",
+                  "Description",
+                  "Date",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="text-left px-4 py-3 text-[0.72rem] font-medium tracking-[0.09em] uppercase text-[#7b8399] border-b border-white/8 whitespace-nowrap"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="bg-[#111827]">
@@ -169,10 +185,13 @@ const StatementsView = () => {
                       {getVerb(stmt)}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-[#7b8399] max-w-xs truncate">
-                    {getDescription(stmt)}
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <StageBadge stage={stmt.stage} />
                   </td>
-                  <td className="px-4 py-3 text-[#4a5168] whitespace-nowrap text-xs">
+                  <td className="px-4 py-3 text-[#7b8399] max-w-xs truncate">
+                    {getDesc(stmt)}
+                  </td>
+                  <td className="px-4 py-3 text-[#7b8399] whitespace-nowrap text-xs">
                     {stmt.createdAt
                       ? new Date(stmt.createdAt).toLocaleDateString()
                       : "-"}
@@ -190,11 +209,7 @@ const StatementsView = () => {
 const TabButton = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
-      active
-        ? "bg-[#1a2235] text-[#e8eaf0] shadow-sm"
-        : "text-[#4a5168] hover:text-[#7b8399]"
-    }`}
+    className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${active ? "bg-[#1a2235] text-[#e8eaf0] shadow-sm" : "text-[#7b8399] hover:text-[#7b8399]"}`}
   >
     {children}
   </button>

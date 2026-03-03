@@ -51,31 +51,27 @@ const Dashboard = () => {
     navigate("/login");
   };
 
+  // enrollment.group is now a populated object { _id, name, slug }
+  const enrollmentSummary = enrollments
+    .filter((e) => e.course?.courseCode && e.group?.name)
+    .map((e) => `${e.course.courseCode}: ${e.group.name}`)
+    .join("  ·  ");
+
   return (
     <div className="flex flex-col min-h-screen bg-navy">
       <header className="sticky top-0 z-10 flex items-center justify-between px-8 py-4 bg-[#111827] border-b border-white/8 backdrop-blur-sm">
         <div className="flex items-center gap-6 text-sm text-[#7b8399]">
           <span className="flex items-center gap-2">
-            <span className="text-[#4a5168]">
-              <User />
-            </span>
+            <User className="w-4 h-4" />
             {user.username}
           </span>
           <span className="hidden sm:flex items-center gap-2">
-            <span className="text-[#4a5168]">✉️</span>
+            <span>✉️</span>
             {user.email}
           </span>
-          {enrollments.length > 0 && (
-            <span className="hidden md:flex items-center gap-2">
-              <span className="text-[#4a5168]">
-                <User />
-              </span>
-              {enrollments
-                .map(
-                  (e) =>
-                    `${e.course?.courseCode}: ${e.group?.replace("group-", "Group ").toUpperCase()}`,
-                )
-                .join("  ·  ")}
+          {enrollmentSummary && (
+            <span className="hidden md:block text-[#4a5168]">
+              {enrollmentSummary}
             </span>
           )}
         </div>
@@ -96,7 +92,7 @@ const Dashboard = () => {
             className={`px-5 py-3.5 text-sm font-medium border-b-2 transition-all duration-200 -mb-px ${
               activeTab === id
                 ? "text-gold border-gold"
-                : "text-[#4a5168] border-transparent hover:text-[#7b8399]"
+                : "text-[#7b8399] border-transparent hover:text-[#e8eaf0]"
             }`}
           >
             {label}

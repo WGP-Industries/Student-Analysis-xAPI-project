@@ -21,7 +21,7 @@ const EMPTY_FORM = {
 const Label = ({ htmlFor, children }) => (
   <label
     htmlFor={htmlFor}
-    className="text-[0.72rem] font-medium tracking-[0.09em] uppercase text-[#4a5168]"
+    className="text-[0.72rem] font-medium tracking-[0.09em] uppercase text-[#7b8399]"
   >
     {children}
   </label>
@@ -30,7 +30,7 @@ const Label = ({ htmlFor, children }) => (
 const Input = ({ isFocused, ...props }) => (
   <input
     {...props}
-    className={`w-full bg-white/3 border rounded-lg px-4 py-3 text-sm text-[#e8eaf0] outline-none appearance-none transition-all duration-200 placeholder:text-[#4a5168] ${
+    className={`w-full bg-white/3 border rounded-lg px-4 py-3 text-sm text-[#e8eaf0] outline-none appearance-none transition-all duration-200 placeholder:text-[#7b8399] ${
       isFocused
         ? "border-gold shadow-[0_0_0_3px_var(--gold-dim)]"
         : "border-white/8 hover:border-white/[0.14]"
@@ -152,7 +152,7 @@ const Login = () => {
                 <span className="font-display text-[1.75rem] text-gold leading-none">
                   {value}
                 </span>
-                <span className="text-[0.68rem] tracking-widest uppercase text-[#4a5168]">
+                <span className="text-[0.68rem] tracking-widest uppercase text-[#7b8399]">
                   {label}
                 </span>
               </div>
@@ -174,7 +174,7 @@ const Login = () => {
                 className={`flex-1 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
                   mode === m
                     ? "bg-[#1a2235] text-[#e8eaf0] shadow-sm"
-                    : "text-[#4a5168] hover:text-[#7b8399]"
+                    : "text-[#7b8399] hover:text-[#7b8399]"
                 }`}
               >
                 {m === "login" ? "Sign In" : "Register"}
@@ -193,7 +193,7 @@ const Login = () => {
             <p className="text-sm text-[#7b8399]">
               {mode === "login"
                 ? "Sign in to access your dashboard"
-                : "You'll be assigned to course groups by your instructor"}
+                : "You'll be assigned to course groups by your us"}
             </p>
           </header>
 

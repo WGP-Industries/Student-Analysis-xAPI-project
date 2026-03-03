@@ -70,7 +70,7 @@ const AdminUsers = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl text-[#e8eaf0]">Users</h1>
-          <p className="text-sm text-[#4a5168] mt-1">
+          <p className="text-sm text-[#7b8399] mt-1">
             {users.length} registered
           </p>
         </div>
@@ -90,9 +90,9 @@ const AdminUsers = () => {
       )}
 
       {loading ? (
-        <div className="py-20 text-center text-sm text-[#4a5168]">Loading…</div>
+        <div className="py-20 text-center text-sm text-[#7b8399]">Loading…</div>
       ) : users.length === 0 ? (
-        <div className="py-20 text-center text-sm text-[#4a5168]">
+        <div className="py-20 text-center text-sm text-[#7b8399]">
           No users found.
         </div>
       ) : (
@@ -103,7 +103,7 @@ const AdminUsers = () => {
                 {["Username", "Email", "Role", "Joined", "Actions"].map((h) => (
                   <th
                     key={h}
-                    className="text-left px-4 py-3 text-[0.68rem] font-medium tracking-[0.09em] uppercase text-[#4a5168] border-b border-white/8 whitespace-nowrap"
+                    className="text-left px-4 py-3 text-[0.68rem] font-medium tracking-[0.09em] uppercase text-[#7b8399] border-b border-white/8 whitespace-nowrap"
                   >
                     {h}
                   </th>
@@ -123,7 +123,7 @@ const AdminUsers = () => {
                   <td className="px-4 py-3">
                     <Badge role={u.role ?? "student"} />
                   </td>
-                  <td className="px-4 py-3 text-[#4a5168] text-xs whitespace-nowrap">
+                  <td className="px-4 py-3 text-[#7b8399] text-xs whitespace-nowrap">
                     {u.createdAt
                       ? new Date(u.createdAt).toLocaleDateString()
                       : "-"}
@@ -148,7 +148,7 @@ const AdminUsers = () => {
                         </button>
                       )}
                       {u._id === currentUser._id && (
-                        <span className="text-xs text-[#4a5168] italic">
+                        <span className="text-xs text-[#7b8399] italic">
                           you
                         </span>
                       )}

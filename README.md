@@ -2,7 +2,7 @@
 
 **Repository:** https://github.com/WGP-Industries/Student-Analysis-xAPI-project
 
-A React-based web application that allows students to record and review xAPI learning statements across two courses - COMP 3609 (Game Programming) and COMP 3610 (Big Data Analytics). An administrative interface provides instructors with full visibility into user activity, enrollments, and statement data.
+A React-based web application that allows students to record and review xAPI learning statements across two courses - COMP 3609 (Game Programming) and COMP 3610 (Big Data Analytics). An administrative interface provides users with full visibility into user activity, enrollments, and statement data.
 
 ---
 
@@ -63,13 +63,13 @@ src/
   components/
     Home.jsx                # Student landing tab - course info, workflow, xAPI explainer
     StatementBuilder.jsx    # Form to compose and send an xAPI statement
-    StatementsView.jsx      # Table of statements scoped to the student's groups
+    StatementsView.jsx      # Table of the current user's own statements
   store/
     store.js                # Redux store
     features/
       authSlice.js          # Auth state: user, isLoggedIn, isLoading, enrollments
   utils/
-    constants.js            # COURSES, GROUPS, XAPI_VERBS
+    constants.js            # COURSES, XAPI_VERBS
     xapi.js                 # buildStatement() utility
 ```
 
@@ -157,14 +157,14 @@ The default tab after login. Contains:
 ### Create Statement Tab
 
 1. Select a course (COMP 3609 or COMP 3610).
-2. Select a group (Group A, B, or C). The selection is saved immediately to the backend as an enrollment and can be changed at any time.
+2. Select a group. Groups are fetched dynamically from `GET /api/courses/:courseCode/groups` and reflect whatever groups have been created by students or admins for that course. The selection is saved immediately to the backend as an enrollment and can be changed at any time.
 3. Select a verb describing the activity performed. COMP 3609 verbs cover game development stages (Designed, Implemented, Animated, Integrated, Debugged, Modelled, Applied, Constructed, Tested, Optimised). COMP 3610 verbs cover data project milestones (Proposed, Collected, Cleaned, Analysed, Visualised, Evaluated, Built, Documented, Reviewed, Presented).
 4. Optionally add a free-text description for additional context.
 5. Submit. The statement is built client-side, sent to `POST /api/xapi`, stored in the database, and forwarded to the LRS.
 
 ### View Statements Tab
 
-Displays all statements from the student's enrolled course groups. Filterable by course via tab buttons. Data is fetched from `GET /api/xapi/statements`.
+Displays all statements submitted by the current user. Filterable by course via tab buttons. Data is fetched from `GET /api/xapi/statements`.
 
 ---
 
@@ -177,7 +177,7 @@ All admin pages are nested under `/admin` and protected by a role check. Only us
 Displays aggregated platform statistics fetched from `GET /api/xapi/admin/stats`:
 
 - Total users, statements, enrollments, and LRS-synced count
-- Statement counts broken down by course, group, and top verbs as horizontal bar charts
+- Statement counts broken down by course, group, top verbs, and stage as horizontal bar charts
 - Daily statement volume for the past 7 days as a bar chart
 
 ### Users (`/admin/users`)
@@ -186,11 +186,11 @@ Fetches all registered users from `GET /api/user/all`. Admins can promote or dem
 
 ### Enrollments (`/admin/enrollments`)
 
-Fetches all enrollments from `GET /api/enrollments`, filterable by course and group. Admins can edit a row inline to change group or project status, remove an enrollment, or manually enroll a student by email via a modal form.
+Fetches all enrollments from `GET /api/enrollments`, filterable by course and group. Admins can edit a row inline to change group or project status, remove an enrollment, or manually enroll a student by email via a modal form. New groups can be created inline directly from the enrollment interface without leaving the page.
 
 ### Statements (`/admin/statements`)
 
-Fetches all statements regardless of enrollment scope from `GET /api/xapi/admin/statements`. Filterable by course, group, and verb text. Each row shows the LRS sync status of the statement.
+Fetches all statements regardless of enrollment scope from `GET /api/xapi/admin/statements`. Filterable by course, group, verb text, and stage. Each row shows the stage and LRS sync status of the statement.
 
 ---
 
@@ -212,3 +212,45 @@ The `selectIsAdmin` selector (`state.auth.user?.role === "admin"`) is used by ro
 ## API Integration
 
 All requests go through `src/configs/api.js`, an Axios instance that automatically attaches the `Authorization: Bearer <token>` header from `localStorage` on every request. The base URL is set from the `VITE_API_URL` environment variable.
+
+---
+
+## Data Models
+
+The following shapes reflect what the frontend receives from the API and stores in local state.
+
+### Group
+
+| Field    | Type   | Notes                               |
+| -------- | ------ | ----------------------------------- |
+| `_id`    | String | MongoDB ObjectId                    |
+| `name`   | String | Display name, e.g. `Group A`        |
+| `slug`   | String | URL-safe identifier, e.g. `group-a` |
+| `course` | String | ObjectId ref to Course              |
+
+### Enrollment
+
+| Field                | Type   | Notes                                     |
+| -------------------- | ------ | ----------------------------------------- |
+| `user`               | String | ObjectId ref to User                      |
+| `course`             | String | ObjectId ref to Course                    |
+| `group`              | String | ObjectId ref to Group                     |
+| `projectStatus`      | String | `not-started`, `in-progress`, `completed` |
+| `projectStartedAt`   | String | ISO date, set on first join               |
+| `projectCompletedAt` | String | ISO date, set when status is completed    |
+
+### Statement
+
+| Field            | Type    | Notes                              |
+| ---------------- | ------- | ---------------------------------- |
+| `user`           | String  | ObjectId ref to User               |
+| `course`         | String  | ObjectId ref to Course             |
+| `group`          | String  | ObjectId ref to Group              |
+| `verb.uri`       | String  | Full verb URI                      |
+| `verb.display`   | String  | Human-readable verb label          |
+| `stage`          | String  | Stage of the activity              |
+| `scenario`       | String  | Scenario context for the statement |
+| `description`    | String  | Optional context                   |
+| `rawStatement`   | Object  | Full xAPI statement JSON           |
+| `lrsSynced`      | Boolean | True once LRS confirms receipt     |
+| `lrsStatementId` | String  | ID returned by the LRS             |

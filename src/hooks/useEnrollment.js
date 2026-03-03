@@ -30,10 +30,10 @@ export const useEnrollment = () => {
     // Student selects or changes their group for a course.
     // Calls POST /api/enrollments/join and updates Redux.
     const joinGroup = useCallback(
-        async (courseCode, group) => {
+        async (courseCode, groupId) => {
             const { data } = await api.post("/api/enrollments/join", {
                 courseCode,
-                group,
+                groupId,
             });
             dispatch(upsertEnrollment(data.enrollment));
             return data.enrollment;

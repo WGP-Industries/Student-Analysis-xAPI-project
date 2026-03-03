@@ -1,15 +1,54 @@
 import { useEffect, useState, useCallback } from "react";
 import api from "../../configs/api";
-import { COURSES, GROUPS } from "../../utils/constants";
+
+const STAGE_COLOURS = {
+  Planning: "bg-blue-500/10   text-blue-300   border-blue-500/20",
+  Exploration: "bg-purple-500/10 text-purple-300 border-purple-500/20",
+  Construction: "bg-amber-500/10  text-amber-300  border-amber-500/20",
+  Testing: "bg-green-500/10  text-green-300  border-green-500/20",
+  Reflection: "bg-rose-500/10   text-rose-300   border-rose-500/20",
+};
+
+const StageBadge = ({ stage }) =>
+  stage ? (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded text-[0.65rem] font-medium border whitespace-nowrap ${STAGE_COLOURS[stage] ?? "bg-white/5 text-[#7b8399] border-white/10"}`}
+    >
+      {stage}
+    </span>
+  ) : (
+    <span className="text-[#4a5168]">-</span>
+  );
 
 const AdminStatements = () => {
   const [statements, setStatements] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [groups, setGroups] = useState([]); // all groups for selected course filter
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [filterCourse, setFilterCourse] = useState("");
   const [filterGroup, setFilterGroup] = useState("");
+  const [filterStage, setFilterStage] = useState("");
   const [filterVerb, setFilterVerb] = useState("");
+
+  // Fetch courses once on mount
+  useEffect(() => {
+    api.get("/api/courses").then(({ data }) => setCourses(data.courses ?? []));
+  }, []);
+
+  // Fetch groups when course filter changes
+  useEffect(() => {
+    setFilterGroup("");
+    if (!filterCourse) {
+      setGroups([]);
+      return;
+    }
+    api
+      .get(`/api/courses/${filterCourse}/groups`)
+      .then(({ data }) => setGroups(data.groups ?? []))
+      .catch(() => setGroups([]));
+  }, [filterCourse]);
 
   const fetchStatements = useCallback(async () => {
     setLoading(true);
@@ -18,6 +57,7 @@ const AdminStatements = () => {
       const params = new URLSearchParams();
       if (filterCourse) params.set("course", filterCourse);
       if (filterGroup) params.set("group", filterGroup);
+      if (filterStage) params.set("stage", filterStage);
       if (filterVerb) params.set("verb", filterVerb);
       params.set("limit", "200");
       const { data } = await api.get(`/api/xapi/admin/statements?${params}`);
@@ -27,7 +67,7 @@ const AdminStatements = () => {
     } finally {
       setLoading(false);
     }
-  }, [filterCourse, filterGroup, filterVerb]);
+  }, [filterCourse, filterGroup, filterStage, filterVerb]);
 
   useEffect(() => {
     fetchStatements();
@@ -39,7 +79,7 @@ const AdminStatements = () => {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="font-display text-2xl text-[#e8eaf0]">Statements</h1>
-          <p className="text-sm text-[#4a5168] mt-1">
+          <p className="text-sm text-[#7b8399] mt-1">
             {statements.length} records
           </p>
         </div>
@@ -54,32 +94,56 @@ const AdminStatements = () => {
 
       {/* Filters */}
       <div className="flex gap-3 flex-wrap">
+        {/* Course */}
         <select
           value={filterCourse}
           onChange={(e) => setFilterCourse(e.target.value)}
           className="bg-[#111827] border border-white/8 rounded-lg px-3 py-2 text-sm text-[#e8eaf0] outline-none"
         >
           <option value="">All Courses</option>
-          {COURSES.map((c) => (
-            <option key={c.id} value={c.id.toUpperCase()}>
-              {c.id.toUpperCase()}
+          {courses.map((c) => (
+            <option key={c.courseCode} value={c.courseCode}>
+              {c.courseCode}
             </option>
           ))}
         </select>
 
+        {/* Group - only shows options when a course is selected */}
         <select
           value={filterGroup}
           onChange={(e) => setFilterGroup(e.target.value)}
-          className="bg-[#111827] border border-white/8 rounded-lg px-3 py-2 text-sm text-[#e8eaf0] outline-none"
+          disabled={!filterCourse}
+          className="bg-[#111827] border border-white/8 rounded-lg px-3 py-2 text-sm text-[#e8eaf0] outline-none disabled:opacity-40"
         >
           <option value="">All Groups</option>
-          {GROUPS.map((g) => (
-            <option key={g.id} value={g.id}>
+          {groups.map((g) => (
+            <option key={g._id} value={g._id}>
               {g.name}
             </option>
           ))}
         </select>
 
+        {/* Stage */}
+        <select
+          value={filterStage}
+          onChange={(e) => setFilterStage(e.target.value)}
+          className="bg-[#111827] border border-white/8 rounded-lg px-3 py-2 text-sm text-[#e8eaf0] outline-none"
+        >
+          <option value="">All Stages</option>
+          {[
+            "Planning",
+            "Exploration",
+            "Construction",
+            "Testing",
+            "Reflection",
+          ].map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+
+        {/* Verb text search */}
         <input
           type="text"
           placeholder="Filter by verb…"
@@ -111,6 +175,7 @@ const AdminStatements = () => {
                   "Group",
                   "User",
                   "Verb",
+                  "Stage",
                   "Description",
                   "LRS",
                   "Date",
@@ -133,12 +198,8 @@ const AdminStatements = () => {
                   <td className="px-4 py-3 text-[#7b8399] text-xs whitespace-nowrap">
                     {s.course?.courseCode ?? "-"}
                   </td>
-                  <td className="px-4 py-3 text-[#7b8399] whitespace-nowrap text-xs">
-                    {s.group
-                      ? s.group
-                          .replace("group-", "Group ")
-                          .replace(/\b\w/g, (c) => c.toUpperCase())
-                      : "-"}
+                  <td className="px-4 py-3 text-[#7b8399] text-xs whitespace-nowrap">
+                    {s.group?.name ?? "-"}
                   </td>
                   <td className="px-4 py-3 text-[#e8eaf0] whitespace-nowrap">
                     {s.user?.username ?? "-"}
@@ -148,16 +209,15 @@ const AdminStatements = () => {
                       {s.verb?.display ?? "-"}
                     </span>
                   </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <StageBadge stage={s.stage} />
+                  </td>
                   <td className="px-4 py-3 text-[#7b8399] max-w-xs truncate text-xs">
                     {s.description || "-"}
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`text-[0.65rem] font-medium px-1.5 py-0.5 rounded ${
-                        s.lrsSynced
-                          ? "bg-emerald-400/10 text-emerald-400"
-                          : "bg-[#4a5168]/20 text-[#4a5168]"
-                      }`}
+                      className={`text-[0.65rem] font-medium px-1.5 py-0.5 rounded ${s.lrsSynced ? "bg-emerald-400/10 text-emerald-400" : "bg-[#4a5168]/20 text-[#4a5168]"}`}
                     >
                       {s.lrsSynced ? "Synced" : "Local"}
                     </span>

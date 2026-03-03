@@ -116,7 +116,7 @@ const AdminLayout = () => {
             <div className="w-2 h-2 bg-gold rounded-sm relative z-10" />
           </div>
           <div>
-            <p className="text-[0.65rem] font-medium tracking-[0.14em] uppercase text-[#4a5168]">
+            <p className="text-[0.65rem] font-medium tracking-[0.14em] uppercase text-[#7b8399]">
               Admin
             </p>
             <p className="text-xs text-[#7b8399] font-medium leading-tight">
@@ -136,7 +136,7 @@ const AdminLayout = () => {
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
                   isActive
                     ? "bg-gold/10 text-gold"
-                    : "text-[#4a5168] hover:text-[#7b8399] hover:bg-white/3"
+                    : "text-[#7b8399] hover:text-[#7b8399] hover:bg-white/3"
                 }`
               }
             >
@@ -151,7 +151,7 @@ const AdminLayout = () => {
           <p className="text-xs text-[#7b8399] truncate mb-0.5">
             {user?.username}
           </p>
-          <p className="text-[0.65rem] text-[#4a5168] truncate mb-3">
+          <p className="text-[0.65rem] text-[#7b8399] truncate mb-3">
             {user?.email}
           </p>
           <button
