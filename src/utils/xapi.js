@@ -1,40 +1,82 @@
 import { v4 as uuidv4 } from "uuid";
 
-const VERB_MAP = {
-    "logged-in": { id: "http://adlnet.gov/expapi/verbs/logged-in", display: { "en-US": "logged in" } },
-    "logged-out": { id: "http://adlnet.gov/expapi/verbs/logged-out", display: { "en-US": "logged out" } },
-    answered: { id: "http://adlnet.gov/expapi/verbs/answered", display: { "en-US": "answered" } },
-    selected: { id: "http://adlnet.gov/expapi/verbs/selected", display: { "en-US": "selected" } },
-    completed: { id: "http://adlnet.gov/expapi/verbs/completed", display: { "en-US": "completed" } },
-    attempted: { id: "http://adlnet.gov/expapi/verbs/attempted", display: { "en-US": "attempted" } },
-    failed: { id: "http://adlnet.gov/expapi/verbs/failed", display: { "en-US": "failed" } },
-    passed: { id: "http://adlnet.gov/expapi/verbs/passed", display: { "en-US": "passed" } },
-};
+const BASE_URI = "https://student-analytics-app.vercel.app/xapi";
 
-const FALLBACK_VERB = {
-    id: "http://adlnet.gov/expapi/verbs/experienced",
-    display: { "en-US": "experienced" },
+// Activity types
+
+const ACTIVITY_TYPES = {
+    project: `${BASE_URI}/activity-types/project`,
+    group: `${BASE_URI}/activity-types/group`,
 };
 
 // Extension URIs for pedagogical metadata attached to every project statement.
-const EXT_STAGE = "https://example.edu/xapi/extensions/pedagogical-stage";
-const EXT_SCENARIO = "https://example.edu/xapi/extensions/learner-scenario";
 
-export const getGroupActivity = (groupId, groups) => {
-    const group = groups.find((g) => g.id === groupId);
+const EXT_STAGE = `${BASE_URI}/extensions/pedagogical-stage`;
+const EXT_SCENARIO = `${BASE_URI}/extensions/learner-scenario`;
+
+// Helpers
+
+/**
+ * Builds an Activity object representing a course project.
+ * Uses the project URI from COURSES in constants.js if passed through,
+ * otherwise falls back to a derived URI from the course code.
+ */
+export const getCourseProjectActivity = (courseCode, courseName, projectUri, projectDescription) => {
+    const code = courseCode?.toLowerCase();
     return {
         objectType: "Activity",
-        id: `https://quiz.com/groups/${groupId}`,
+        id: projectUri || `${BASE_URI}/activities/${code}/project`,
         definition: {
+            type: ACTIVITY_TYPES.project,
+            name: { "en-US": courseName || courseCode || "Course Project" },
+            description: { "en-US": projectDescription || `${courseCode} course project` },
+        },
+    };
+};
+
+/**
+ * Builds a grouping Activity for context.contextActivities.
+ * Uses _id (MongoDB) with a fallback to id for normalised shapes.
+ */
+export const getGroupActivity = (groupId, groups) => {
+    const group = groups?.find((g) => (g._id || g.id) === groupId);
+    return {
+        objectType: "Activity",
+        id: `${BASE_URI}/activities/groups/${groupId}`,
+        definition: {
+            type: ACTIVITY_TYPES.group,
             name: { "en-US": group ? group.name : groupId },
             description: { "en-US": `Learning group: ${group ? group.name : groupId}` },
         },
     };
 };
 
+// Main builder
+
+/**
+ * Builds a complete xAPI statement.
+ *
+ * Expected fields in `data` for a course (project) statement:
+ *   customVerb, verbId, verbDisplay  - verb taken directly from XAPI_VERBS
+ *   userId, email, username          - actor
+ *   courseCode, courseName           - used to build the object activity
+ *   activityId                       - project URI from COURSES (project.uri)
+ *   projectDescription               - goes into object definition description
+ *   stage                            - context extension (EXT_STAGE)
+ *   scenario                         - context extension (EXT_SCENARIO)
+ *   description                      - optional free-text context
+ *   parent                           - context activity (the course itself)
+ *   grouping, category               - additional context activities
+ *   result                           - optional xAPI result block
+ *   extensions                       - any additional context extensions
+ *
+ * `userData` - Redux auth user, fallback for userId/group.
+ * `groups`   - full groups array from the course, used by getGroupActivity.
+ */
 export const buildStatement = ({ verb, data, userData, groups }) => {
     const homePage = window.location.origin;
 
+    // Actor
     const actor = {
         objectType: "Agent",
         account: {
@@ -44,28 +86,30 @@ export const buildStatement = ({ verb, data, userData, groups }) => {
         ...(data.username ? { name: data.username } : {}),
     };
 
-    const resolvedVerb = data.customVerb
-        ? { id: data.verbId, display: { "en-US": data.verbDisplay } }
-        : VERB_MAP[verb] ?? FALLBACK_VERB;
-
-    const object = {
-        objectType: "Activity",
-        id: data.activityId || `https://quiz.com/activity/${data.activity || "unknown"}`,
-        definition: {
-            type: data.activityType || "https://quiz.com/activity-types/activity",
-            name: { "en-US": data.activity || "Activity" },
-            description: { "en-US": data.description || "Learning activity" },
-        },
+    // Verb - always passed directly from XAPI_VERBS via customVerb: true
+    const resolvedVerb = {
+        id: data.verbId,
+        display: { "en-US": data.verbDisplay },
     };
 
+    // Object - the course project activity
+    const object = getCourseProjectActivity(
+        data.courseCode,
+        data.courseName,
+        data.activityId,        // project.uri from COURSES constant
+        data.projectDescription
+    );
+
+    // Context activities
     const contextActivities = {};
-    if (userData?.group) contextActivities.grouping = [getGroupActivity(userData.group, groups)];
+    if (userData?.group) {
+        contextActivities.grouping = [getGroupActivity(userData.group, groups)];
+    }
     if (data.grouping) contextActivities.grouping = [data.grouping];
     if (data.parent) contextActivities.parent = [data.parent];
     if (data.category) contextActivities.category = [data.category];
 
-    // Attach pedagogical stage and learner scenario to context.extensions.
-    // These are passed in from StatementBuilder when submitting a project statement.
+    // Context extensions
     const extensions = { ...(data.extensions || {}) };
     if (data.stage) extensions[EXT_STAGE] = data.stage;
     if (data.scenario) extensions[EXT_SCENARIO] = data.scenario;
@@ -75,6 +119,7 @@ export const buildStatement = ({ verb, data, userData, groups }) => {
         ...(Object.keys(contextActivities).length ? { contextActivities } : {}),
     };
 
+    // Statement
     const statement = {
         id: uuidv4(),
         actor,
@@ -86,5 +131,6 @@ export const buildStatement = ({ verb, data, userData, groups }) => {
     };
 
     if (data.result) statement.result = data.result;
+
     return statement;
 };

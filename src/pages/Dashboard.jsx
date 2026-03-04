@@ -4,7 +4,6 @@ import { User } from "lucide-react";
 import { Navigate, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { logout, selectIsAdmin } from "../store/features/authSlice";
-import { useXAPI } from "../hooks/useXAPI";
 import { useEnrollment } from "../hooks/useEnrollment";
 import StatementBuilder from "../components/StatementBuilder";
 import StatementsView from "../components/StatementsView";
@@ -21,7 +20,6 @@ const Dashboard = () => {
   const { user, isLoggedIn } = useSelector((s) => s.auth);
   const isAdmin = useSelector(selectIsAdmin);
   const navigate = useNavigate();
-  const { sendXAPI } = useXAPI();
   const { enrollments, fetchEnrollments } = useEnrollment();
   const [activeTab, setActiveTab] = useState("home");
 
@@ -33,18 +31,6 @@ const Dashboard = () => {
   }, []);
 
   const handleLogout = async () => {
-    try {
-      await sendXAPI("logged-out", {
-        username: user.username,
-        email: user.email,
-        userId: user._id,
-        activity: "Logout",
-        activityId: "https://example.edu/activity/logout",
-        activityType: "https://example.edu/activity-types/session",
-        description: "User logged out",
-      });
-    } catch (_) {}
-
     localStorage.removeItem("token");
     dispatch(logout());
     toast.success("Logged out");

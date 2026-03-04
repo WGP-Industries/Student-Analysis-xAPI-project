@@ -6,6 +6,8 @@ import { useEnrollment } from "../hooks/useEnrollment";
 import { XAPI_VERBS, SCENARIOS } from "../utils/constants";
 import api from "../configs/api";
 
+const BASE_URI = "https://student-analytics-app.vercel.app/xapi";
+
 const NEW_GROUP_SENTINEL = "__new__";
 
 const selectClass = (focused) =>
@@ -56,7 +58,7 @@ const StageBadge = ({ stage }) => (
   </span>
 );
 
-//  New group modal
+// New group modal
 const NewGroupModal = ({ courseCode, courseName, onCreated, onCancel }) => {
   const [name, setName] = useState("");
   const [confirming, setConfirming] = useState(false);
@@ -71,7 +73,6 @@ const NewGroupModal = ({ courseCode, courseName, onCreated, onCancel }) => {
         name: trimmed,
       });
       toast.success(`Group "${trimmed}" created!`);
-      // Route now returns { group, groups } - use data.group directly
       onCreated(data.group, data.groups);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to create group");
@@ -199,17 +200,14 @@ const NewGroupModal = ({ courseCode, courseName, onCreated, onCancel }) => {
   );
 };
 
-//
-
 const StatementBuilder = () => {
   const { user } = useSelector((s) => s.auth);
   const { sendXAPI } = useXAPI();
   const { getEnrollment, joinGroup } = useEnrollment();
 
-  // Courses fetched from API
   const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState(null); // full course object
-  const [selectedGroup, setSelectedGroup] = useState(""); // Group _id
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedVerb, setSelectedVerb] = useState("");
   const [selectedScenario, setSelectedScenario] = useState("");
   const [description, setDescription] = useState("");
@@ -323,11 +321,11 @@ const StatementBuilder = () => {
         username: user.username,
         email: user.email,
         userId: user._id,
-        activity: selectedCourse.project?.name,
+        courseCode,
+        courseName: selectedCourse.project?.name,
         activityId: selectedCourse.project?.uri,
-        activityType: "https://example.edu/activity-types/project",
+        activityType: `${BASE_URI}/activity-types/project`,
         description: description || verbObj.description,
-        courseId: courseCode,
         stage: verbObj.stage,
         scenario: selectedScenario,
         parent: {
