@@ -13,6 +13,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminEnrollments from "./pages/admin/AdminEnrollments";
 import AdminStatements from "./pages/admin/AdminStatements";
+import AdminImport from "./pages/admin/AdminImport";
 
 // Shown while the auth rehydration request (/api/user/me) is in flight.
 // Prevents route guards from flashing a redirect before we know the auth state.
@@ -120,6 +121,7 @@ const App = () => {
           <Route path="users" element={<AdminUsers />} />
           <Route path="enrollments" element={<AdminEnrollments />} />
           <Route path="statements" element={<AdminStatements />} />
+          <Route path="import" element={<AdminImport />} />
         </Route>
 
         {/* Catch-all: unknown routes fall back to login */}

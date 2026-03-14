@@ -1,20 +1,19 @@
 import { v4 as uuidv4 } from "uuid";
+import { BASE_URI } from "./constants";
 
-const BASE_URI = "https://student-analytics-app.vercel.app/xapi";
+
 
 // Activity types
-
 const ACTIVITY_TYPES = {
     project: `${BASE_URI}/activity-types/project`,
     group: `${BASE_URI}/activity-types/group`,
 };
 
 // Extension URIs for pedagogical metadata attached to every project statement.
-
 const EXT_STAGE = `${BASE_URI}/extensions/pedagogical-stage`;
-const EXT_SCENARIO = `${BASE_URI}/extensions/learner-scenario`;
-
-// Helpers
+const EXT_STEP = `${BASE_URI}/extensions/problem-step`;
+// EXT_SCENARIO kept here for easy re-enable if needed
+// const EXT_SCENARIO = `${BASE_URI}/extensions/learner-scenario`;
 
 /**
  * Builds an Activity object representing a course project.
@@ -51,8 +50,6 @@ export const getGroupActivity = (groupId, groups) => {
     };
 };
 
-// Main builder
-
 /**
  * Builds a complete xAPI statement.
  *
@@ -63,7 +60,7 @@ export const getGroupActivity = (groupId, groups) => {
  *   activityId                       - project URI from COURSES (project.uri)
  *   projectDescription               - goes into object definition description
  *   stage                            - context extension (EXT_STAGE)
- *   scenario                         - context extension (EXT_SCENARIO)
+ *   problemStep                      - context extension (EXT_STEP)
  *   description                      - optional free-text context
  *   parent                           - context activity (the course itself)
  *   grouping, category               - additional context activities
@@ -96,7 +93,7 @@ export const buildStatement = ({ verb, data, userData, groups }) => {
     const object = getCourseProjectActivity(
         data.courseCode,
         data.courseName,
-        data.activityId,        // project.uri from COURSES constant
+        data.activityId,
         data.projectDescription
     );
 
@@ -112,7 +109,9 @@ export const buildStatement = ({ verb, data, userData, groups }) => {
     // Context extensions
     const extensions = { ...(data.extensions || {}) };
     if (data.stage) extensions[EXT_STAGE] = data.stage;
-    if (data.scenario) extensions[EXT_SCENARIO] = data.scenario;
+    if (data.problemStep) extensions[EXT_STEP] = data.problemStep;
+    // re-enable scenario by uncommenting:
+    // if (data.scenario) extensions[EXT_SCENARIO] = data.scenario;
 
     const context = {
         extensions,

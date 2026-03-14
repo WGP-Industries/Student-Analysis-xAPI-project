@@ -3,10 +3,8 @@ import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { useXAPI } from "../hooks/useXAPI";
 import { useEnrollment } from "../hooks/useEnrollment";
-import { XAPI_VERBS, SCENARIOS } from "../utils/constants";
+import { XAPI_VERBS, STEPS, BASE_URI } from "../utils/constants";
 import api from "../configs/api";
-
-const BASE_URI = "https://student-analytics-app.vercel.app/xapi";
 
 const NEW_GROUP_SENTINEL = "__new__";
 
@@ -209,7 +207,8 @@ const StatementBuilder = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedVerb, setSelectedVerb] = useState("");
-  const [selectedScenario, setSelectedScenario] = useState("");
+  const [selectedStep, setSelectedStep] = useState("");
+  const [selectedStage, setSelectedStage] = useState("");
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
@@ -229,6 +228,7 @@ const StatementBuilder = () => {
 
   const courseCode = selectedCourse?.courseCode?.toLowerCase() ?? "";
   const verbs = XAPI_VERBS[courseCode] ?? [];
+  const steps = STEPS[courseCode] ?? [];
   const verbObj = verbs.find((v) => v.uri === selectedVerb);
   const enrollment = getEnrollment(courseCode);
 
@@ -251,6 +251,8 @@ const StatementBuilder = () => {
   useEffect(() => {
     setSelectedGroup(enrollment?.group?._id ?? "");
     setSelectedVerb(XAPI_VERBS[courseCode]?.[0]?.uri ?? "");
+    setSelectedStep("");
+    setSelectedStage("");
   }, [courseCode, enrollment?.group?._id]);
 
   const handleCourseChange = (e) => {
@@ -306,8 +308,12 @@ const StatementBuilder = () => {
       toast.error("Please select a group before submitting a statement");
       return;
     }
-    if (!selectedScenario) {
-      toast.error("Please select a learner scenario before submitting");
+    if (!selectedStep) {
+      toast.error("Please select a project step before submitting");
+      return;
+    }
+    if (!selectedStage) {
+      toast.error("Please select a pedagogical stage before submitting");
       return;
     }
     if (!verbObj || !selectedCourse) return;
@@ -326,8 +332,8 @@ const StatementBuilder = () => {
         activityId: selectedCourse.project?.uri,
         activityType: `${BASE_URI}/activity-types/project`,
         description: description || verbObj.description,
-        stage: verbObj.stage,
-        scenario: selectedScenario,
+        stage: selectedStage,
+        problemStep: selectedStep,
         parent: {
           objectType: "Activity",
           id: selectedCourse.uri,
@@ -472,6 +478,64 @@ const StatementBuilder = () => {
           </div>
         )}
 
+        {/* Pedagogical Stage */}
+        <div className="flex flex-col gap-2">
+          <FieldLabel htmlFor="stage">Pedagogical Stage</FieldLabel>
+          <div className="relative">
+            <select
+              id="stage"
+              value={selectedStage}
+              onChange={(e) => setSelectedStage(e.target.value)}
+              onFocus={() => setFocused("stage")}
+              onBlur={() => setFocused(null)}
+              className={selectClass(focused === "stage")}
+              required
+            >
+              <option value="" disabled>
+                Select a stage
+              </option>
+              {[
+                "Planning",
+                "Exploration",
+                "Construction",
+                "Testing",
+                "Reflection",
+              ].map((s) => (
+                <option key={s} value={s} className="bg-[#111827]">
+                  {s}
+                </option>
+              ))}
+            </select>
+            <Chevron />
+          </div>
+        </div>
+
+        {/* Project Step */}
+        <div className="flex flex-col gap-2">
+          <FieldLabel htmlFor="step">Project Step</FieldLabel>
+          <div className="relative">
+            <select
+              id="step"
+              value={selectedStep}
+              onChange={(e) => setSelectedStep(e.target.value)}
+              onFocus={() => setFocused("step")}
+              onBlur={() => setFocused(null)}
+              className={selectClass(focused === "step")}
+              required
+            >
+              <option value="" disabled>
+                Select a project step
+              </option>
+              {steps.map((s) => (
+                <option key={s.id} value={s.id} className="bg-[#111827]">
+                  {s.label}
+                </option>
+              ))}
+            </select>
+            <Chevron />
+          </div>
+        </div>
+
         {/* Verb */}
         <div className="flex flex-col gap-2">
           <FieldLabel htmlFor="verb">What did you do?</FieldLabel>
@@ -500,37 +564,6 @@ const StatementBuilder = () => {
                 {verbObj.description}
               </p>
             </div>
-          )}
-        </div>
-
-        {/* Learner Scenario */}
-        <div className="flex flex-col gap-2">
-          <FieldLabel htmlFor="scenario">Learner Scenario</FieldLabel>
-          <div className="relative">
-            <select
-              id="scenario"
-              value={selectedScenario}
-              onChange={(e) => setSelectedScenario(e.target.value)}
-              onFocus={() => setFocused("scenario")}
-              onBlur={() => setFocused(null)}
-              className={selectClass(focused === "scenario")}
-              required
-            >
-              <option value="" disabled>
-                Select your scenario
-              </option>
-              {SCENARIOS.map((s) => (
-                <option key={s.id} value={s.id} className="bg-[#111827]">
-                  {s.label}
-                </option>
-              ))}
-            </select>
-            <Chevron />
-          </div>
-          {selectedScenario && (
-            <p className="text-xs text-[#7b8399] mt-1">
-              {SCENARIOS.find((s) => s.id === selectedScenario)?.description}
-            </p>
           )}
         </div>
 
@@ -566,7 +599,8 @@ const StatementBuilder = () => {
             groupsLoading ||
             addingGroup ||
             !selectedGroup ||
-            !selectedScenario
+            !selectedStep ||
+            !selectedStage
           }
           className="self-start flex items-center gap-2 px-6 py-3 bg-gold text-navy text-sm font-medium rounded-lg transition-all duration-200 hover:bg-[#d4b05a] hover:shadow-gold hover:-translate-y-px active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
         >
@@ -591,12 +625,9 @@ const StatementBuilder = () => {
           Verb:{" "}
           <span className="text-[#e8eaf0]">{verbObj?.display ?? "-"}</span>
           {" · "}
-          Stage: <span className="text-[#e8eaf0]">{verbObj?.stage ?? "-"}</span>
+          Stage: <span className="text-[#e8eaf0]">{selectedStage || "-"}</span>
           {" · "}
-          Scenario:{" "}
-          <span className="text-[#e8eaf0]">
-            {SCENARIOS.find((s) => s.id === selectedScenario)?.label ?? "-"}
-          </span>
+          Step: <span className="text-[#e8eaf0]">{selectedStep || "-"}</span>
           {" · "}
           Project:{" "}
           <span className="text-[#e8eaf0]">

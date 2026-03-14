@@ -1,3 +1,4 @@
+export const BASE_URI = "https://student-analytics-app.vercel.app/xapi";
 
 export const STAGES = [
     { id: "Planning", label: "Planning" },
@@ -7,26 +8,24 @@ export const STAGES = [
     { id: "Reflection", label: "Reflection" },
 ];
 
-export const SCENARIOS = [
-    {
-        id: "Planner",
-        label: "Planner",
-        description:
-            "This learner carefully plans each step of the project in advance. They focus on structured timelines, detailed task breakdowns, and predictable workflows. Their submissions often reflect a methodical approach to completing project milestones and documenting decisions.",
-    },
-    {
-        id: "Tinkerer",
-        label: "Tinkerer",
-        description:
-            "The tinkerer experiments and learns iteratively. They explore new tools, APIs, or frameworks without strict upfront planning. Their submissions capture trial-and-error approaches, creative problem-solving, and adaptation to unexpected challenges during the project.",
-    },
-    {
-        id: "LateTester",
-        label: "Late Tester",
-        description:
-            "This learner focuses on testing and validation after implementation. They may initially build features quickly and then rigorously debug or validate behavior later. Submissions reflect a focus on quality assurance, evaluating edge cases, and reflecting on the correctness of prior work.",
-    },
-];
+// Course-specific project steps, second layer of the 3-layer hierarchy
+export const STEPS = {
+    comp3609: [
+        { id: "Game Concept Design", label: "Game Concept Design" },
+        { id: "Mechanics Implementation", label: "Mechanics Implementation" },
+        { id: "Asset Integration", label: "Asset Integration" },
+        { id: "Playtesting", label: "Playtesting" },
+        { id: "Balancing & Refinement", label: "Balancing & Refinement" },
+    ],
+    comp3610: [
+        { id: "Problem Framing", label: "Problem Framing" },
+        { id: "Data Acquisition", label: "Data Acquisition" },
+        { id: "Data Preparation", label: "Data Preparation" },
+        { id: "Analysis / Modelling", label: "Analysis / Modelling" },
+        { id: "Evaluation & Interpretation", label: "Evaluation & Interpretation" },
+        { id: "Communication of Results", label: "Communication of Results" },
+    ],
+};
 
 export const COURSES = [
     {
@@ -55,16 +54,12 @@ export const COURSES = [
     },
 ];
 
-const BASE_URI = "https://student-analytics-app.vercel.app/xapi";
-
 const VERBS_3609 = [
-    // Core mandatory verbs
     { display: "Planned", uri: `${BASE_URI}/verbs/comp3609/planned`, stage: "Planning", description: "The student planned an aspect of the game before writing code, such as level design, class structure, or feature scope." },
     { display: "Attempted", uri: `${BASE_URI}/verbs/comp3609/attempted`, stage: "Exploration", description: "The student made an initial attempt at implementing a game feature or system, even if the result was incomplete." },
     { display: "Revised", uri: `${BASE_URI}/verbs/comp3609/revised`, stage: "Reflection", description: "The student revisited and improved a previously written or designed component of the game." },
     { display: "Tested", uri: `${BASE_URI}/verbs/comp3609/tested`, stage: "Testing", description: "The student ran the game to verify that a specific feature behaved correctly under expected conditions." },
     { display: "Reflected", uri: `${BASE_URI}/verbs/comp3609/reflected`, stage: "Reflection", description: "The student reviewed their own progress, identified what worked and what did not, and recorded lessons learned." },
-    // Emergent verbs
     { display: "Designed", uri: `${BASE_URI}/verbs/comp3609/designed`, stage: "Planning", description: "The student planned the game structure, screen layout, entity hierarchy, or level architecture before writing code." },
     { display: "Implemented", uri: `${BASE_URI}/verbs/comp3609/implemented`, stage: "Construction", description: "The student wrote code for a game feature or system such as the game loop, input handling, or a game entity." },
     { display: "Animated", uri: `${BASE_URI}/verbs/comp3609/animated`, stage: "Construction", description: "The student set up sprite sheet loading, frame sequencing, or the AnimatedSprite class to bring a character or object to life." },
@@ -78,13 +73,11 @@ const VERBS_3609 = [
 ];
 
 const VERBS_3610 = [
-    // Core mandatory verbs
     { display: "Planned", uri: `${BASE_URI}/verbs/comp3610/planned`, stage: "Planning", description: "The student planned the analysis approach, dataset strategy, or project structure before beginning implementation." },
     { display: "Attempted", uri: `${BASE_URI}/verbs/comp3610/attempted`, stage: "Exploration", description: "The student made an initial attempt at applying an algorithm, query, or analytical method, even if the result was incomplete." },
     { display: "Revised", uri: `${BASE_URI}/verbs/comp3610/revised`, stage: "Reflection", description: "The student revisited and improved a previously written pipeline, model, or report section based on new findings or feedback." },
     { display: "Tested", uri: `${BASE_URI}/verbs/comp3610/tested`, stage: "Testing", description: "The student tested a pipeline, model, or application component to verify it produced correct and expected results." },
     { display: "Reflected", uri: `${BASE_URI}/verbs/comp3610/reflected`, stage: "Reflection", description: "The student reviewed their own progress, evaluated decisions made during the project, and recorded lessons learned." },
-    // Emergent verbs
     { display: "Proposed", uri: `${BASE_URI}/verbs/comp3610/proposed`, stage: "Planning", description: "The student contributed to the project proposal, defining the problem, identifying the dataset, and outlining the intended analysis approach." },
     { display: "Collected", uri: `${BASE_URI}/verbs/comp3610/collected`, stage: "Exploration", description: "The student sourced and acquired a real-world dataset from an appropriate data provider, API, or repository for use in the project." },
     { display: "Cleaned", uri: `${BASE_URI}/verbs/comp3610/cleaned`, stage: "Construction", description: "The student preprocessed raw data, handling missing values, correcting inconsistencies, and transforming it into a usable, analysis-ready format." },

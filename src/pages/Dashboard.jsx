@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { User } from "lucide-react";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -8,6 +8,7 @@ import { useEnrollment } from "../hooks/useEnrollment";
 import StatementBuilder from "../components/StatementBuilder";
 import StatementsView from "../components/StatementsView";
 import Home from "../components/Home";
+import ChangePassword from "../components/ChangePassword";
 
 const TABS = [
   { id: "home", label: "Home" },
@@ -22,13 +23,12 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { enrollments, fetchEnrollments } = useEnrollment();
   const [activeTab, setActiveTab] = useState("home");
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   if (!isLoggedIn) return <Navigate to="/login" replace />;
   if (isAdmin) return <Navigate to="/admin" replace />;
 
-  useEffect(() => {
-    fetchEnrollments();
-  }, []);
+  // fetchEnrollments called once on mount via useEnrollment hook
 
   const handleLogout = async () => {
     localStorage.removeItem("token");
@@ -62,12 +62,20 @@ const Dashboard = () => {
           )}
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 text-sm text-[#e05c5c] border border-[#e05c5c]/25 rounded-lg transition-all duration-200 hover:bg-[#e05c5c]/10 hover:border-[#e05c5c]/50"
-        >
-          Logout
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowChangePassword(true)}
+            className="px-4 py-2 text-sm text-[#7b8399] border border-white/8 rounded-lg transition-all duration-200 hover:text-[#e8eaf0] hover:border-white/[0.14]"
+          >
+            Change Password
+          </button>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 text-sm text-[#e05c5c] border border-[#e05c5c]/25 rounded-lg transition-all duration-200 hover:bg-[#e05c5c]/10 hover:border-[#e05c5c]/50"
+          >
+            Logout
+          </button>
+        </div>
       </header>
 
       <nav className="flex gap-1 px-8 bg-[#111827] border-b border-white/8">
@@ -91,6 +99,10 @@ const Dashboard = () => {
         {activeTab === "create" && <StatementBuilder />}
         {activeTab === "view" && <StatementsView />}
       </main>
+
+      {showChangePassword && (
+        <ChangePassword onClose={() => setShowChangePassword(false)} />
+      )}
     </div>
   );
 };

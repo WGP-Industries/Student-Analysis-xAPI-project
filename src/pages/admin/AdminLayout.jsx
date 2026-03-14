@@ -91,6 +91,27 @@ const NAV = [
       </svg>
     ),
   },
+  {
+    to: "/admin/import",
+    label: "Import",
+    icon: (
+      <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
+        <path
+          d="M8 2v8M5 7l3 3 3-3"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M2 12h12"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+  },
 ];
 
 const AdminLayout = () => {
@@ -107,9 +128,7 @@ const AdminLayout = () => {
 
   return (
     <div className="flex min-h-screen bg-navy">
-      {/* Sidebar */}
       <aside className="w-56 shrink-0 flex flex-col bg-[#111827] border-r border-white/8">
-        {/* Logo */}
         <div className="flex items-center gap-3 px-5 py-5 border-b border-white/8">
           <div className="w-7 h-7 border border-gold/80 rounded-md flex items-center justify-center relative">
             <div className="absolute inset-1 bg-gold/20 rounded-sm" />
@@ -125,7 +144,6 @@ const AdminLayout = () => {
           </div>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5">
           {NAV.map(({ to, end, label, icon }) => (
             <NavLink
@@ -146,7 +164,6 @@ const AdminLayout = () => {
           ))}
         </nav>
 
-        {/* User + logout */}
         <div className="px-4 py-4 border-t border-white/8">
           <p className="text-xs text-[#7b8399] truncate mb-0.5">
             {user?.username}
@@ -163,7 +180,6 @@ const AdminLayout = () => {
         </div>
       </aside>
 
-      {/* Main content */}
       <main className="flex-1 overflow-auto">
         <div className="max-w-6xl mx-auto px-8 py-8">
           <Outlet />

@@ -13,6 +13,7 @@ const STATS = [
 
 const EMPTY_FORM = {
   username: "",
+  identifier: "",
   email: "",
   password: "",
   confirmPassword: "",
@@ -76,9 +77,11 @@ const Login = () => {
     try {
       const endpoint =
         mode === "login" ? "/api/user/login" : "/api/user/register";
+
+      // Login sends identifier (email or username), register sends separate fields
       const payload =
         mode === "login"
-          ? { email: form.email, password: form.password }
+          ? { identifier: form.identifier, password: form.password }
           : {
               username: form.username,
               email: form.email,
@@ -101,7 +104,7 @@ const Login = () => {
 
   return (
     <div className="flex min-h-screen bg-navy relative overflow-hidden">
-      {/*  Background  */}
+      {/* Background */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div
           className="absolute inset-0"
@@ -117,7 +120,7 @@ const Login = () => {
         <div className="absolute w-100 h-100 -bottom-24 right-[30%] rounded-full blur-[80px] bg-[radial-gradient(circle,rgba(59,130,246,0.08)_0%,transparent_70%)]" />
       </div>
 
-      {/*  Left panel  */}
+      {/* Left panel */}
       <aside className="hidden lg:flex w-105 shrink-0 relative z-10 border-r border-white/8 bg-linear-to-b from-[#1a2235] to-navy">
         <div className="flex flex-col p-14 w-full">
           <div className="flex items-center gap-3 mb-20">
@@ -161,7 +164,7 @@ const Login = () => {
         </div>
       </aside>
 
-      {/*  Right panel  */}
+      {/* Right panel */}
       <main className="flex-1 flex items-center justify-center p-6 relative z-10">
         <div className="w-full max-w-105 bg-[#111827] border border-white/8 rounded-2xl p-10 animate-[fadeUp_0.45s_cubic-bezier(0.22,1,0.36,1)_both]">
           {/* Mode toggle */}
@@ -192,8 +195,8 @@ const Login = () => {
             </h2>
             <p className="text-sm text-[#7b8399]">
               {mode === "login"
-                ? "Sign in to access your dashboard"
-                : "You'll be assigned to course groups by your us"}
+                ? "Sign in with your email or username"
+                : "You'll be assigned to course groups by your lecturer"}
             </p>
           </header>
 
@@ -222,23 +225,42 @@ const Login = () => {
               </div>
             )}
 
-            {/* Email */}
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={handleChange}
-                onFocus={focus("email")}
-                onBlur={blur}
-                placeholder="john@example.com"
-                required
-                isFocused={focused === "email"}
-                autoComplete="email"
-              />
-            </div>
+            {/* Identifier (login) or Email (register) */}
+            {mode === "login" ? (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="identifier">Email or Username</Label>
+                <Input
+                  id="identifier"
+                  name="identifier"
+                  type="text"
+                  value={form.identifier}
+                  onChange={handleChange}
+                  onFocus={focus("identifier")}
+                  onBlur={blur}
+                  placeholder="john@example.com or john.doe"
+                  required
+                  isFocused={focused === "identifier"}
+                  autoComplete="username"
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  onFocus={focus("email")}
+                  onBlur={blur}
+                  placeholder="john@example.com"
+                  required
+                  isFocused={focused === "email"}
+                  autoComplete="email"
+                />
+              </div>
+            )}
 
             {/* Password */}
             <div className="flex flex-col gap-2">

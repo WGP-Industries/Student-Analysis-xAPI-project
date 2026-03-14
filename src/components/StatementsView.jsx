@@ -153,6 +153,7 @@ const StatementsView = () => {
                   "User",
                   "Verb",
                   "Stage",
+                  "Step",
                   "Description",
                   "Date",
                 ].map((h) => (
@@ -187,6 +188,9 @@ const StatementsView = () => {
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <StageBadge stage={stmt.stage} />
+                  </td>
+                  <td className="px-4 py-3 text-[#7b8399] whitespace-nowrap text-xs max-w-35 truncate">
+                    {stmt.problemStep ?? "-"}
                   </td>
                   <td className="px-4 py-3 text-[#7b8399] max-w-xs truncate">
                     {getDesc(stmt)}

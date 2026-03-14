@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useEnrollment } from "../hooks/useEnrollment";
-import { XAPI_VERBS, SCENARIOS } from "../utils/constants";
+import { XAPI_VERBS, STEPS } from "../utils/constants";
 import api from "../configs/api";
 
 const STAGE_COLOURS = {
@@ -45,6 +45,7 @@ const CourseCard = ({ course, enrollment }) => {
   const courseCode = course?.courseCode ?? "";
   const courseKey = courseCode.toLowerCase();
   const verbs = XAPI_VERBS[courseKey] ?? [];
+  const steps = STEPS[courseKey] ?? [];
   const [groups, setGroups] = useState([]);
 
   useEffect(() => {
@@ -102,6 +103,25 @@ const CourseCard = ({ course, enrollment }) => {
           {course?.project?.description ?? ""}
         </p>
       </div>
+
+      {/* Project Steps */}
+      {steps.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <p className="text-[0.65rem] font-medium tracking-widest uppercase text-[#7b8399]">
+            Project Steps - {steps.length}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {steps.map((s) => (
+              <span
+                key={s.id}
+                className="text-[0.65rem] px-2 py-0.5 rounded bg-white/4 border border-white/6 text-[#7b8399]"
+              >
+                {s.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Stages */}
       {Object.keys(byStage).length > 0 && (
@@ -198,7 +218,7 @@ const Home = ({ onNavigate }) => {
         <p className="text-sm text-[#7b8399] leading-relaxed max-w-xl mt-1">
           This portal lets you record your learning activity as xAPI statements
           throughout your project. Each statement you submit is stored here and
-          forwarded to the Learning Record Store for us to review.
+          forwarded to the Learning Record Store for review.
         </p>
       </div>
 
@@ -220,11 +240,12 @@ const Home = ({ onNavigate }) => {
             the group you have been assigned to. Your group selection is saved
             automatically and only needs to be set once per course.
           </Step>
-          <Step number={2} title="Choose a verb and learner scenario">
-            Each course has a curated list of verbs mapped to project milestones
-            - things like Designed, Implemented, Tested, or Visualised. Every
-            verb belongs to a stage, and you'll also pick a learner scenario
-            that best describes how you're approaching the work.
+          <Step number={2} title="Choose your stage, project step, and verb">
+            Select the pedagogical stage that describes where you are in the
+            process, then pick the specific project step you were working on.
+            Finally choose a verb from the list - things like Designed,
+            Implemented, Tested, or Visualised - that best describes what you
+            did.
           </Step>
           <Step number={3} title="Submit your statement">
             Add an optional description for extra context, then submit. Your
@@ -248,16 +269,18 @@ const Home = ({ onNavigate }) => {
           </h2>
         </div>
         <p className="text-sm text-[#7b8399] leading-relaxed">
-          xAPI (Experience API) is a specification for recording learning
-          experiences in a standardised format. Every statement follows an{" "}
+          xAPI (Experience API) is a specification/standard for recording
+          learning experiences in a standardised format, defined by IEEE. Every
+          statement follows an{" "}
           <span className="text-[#e8eaf0]">Actor - Verb - Object</span>{" "}
           structure: you (the actor) performed an action (the verb) on something
           (the object - in this case, your project).
         </p>
         <p className="text-sm text-[#7b8399] leading-relaxed">
           Statements are stored locally in this platform's database and
-          simultaneously forwarded to a Learning Record Store (LRS), where they
-          can be queried, aggregated, and analysed across the entire cohort.
+          simultaneously forwarded to a Learning Record Store (LRS) - a database
+          that stores and retrieves xAPI records - where they can be queried,
+          aggregated, and analysed across the entire cohort.
         </p>
         {/* Statement example */}
         <div className="px-5 py-4 bg-white/2 border border-white/8 rounded-xl flex flex-col gap-2">
@@ -267,18 +290,21 @@ const Home = ({ onNavigate }) => {
           <p className="text-sm text-[#7b8399] leading-relaxed">
             <span className="text-[#e8eaf0] font-medium">Jane Doe</span>{" "}
             <span className="text-gold font-medium">Implemented</span>{" "}
-            <span className="text-[#e8eaf0] font-medium">2D Platform Game</span>{" "}
+            <span className="text-[#e8eaf0] font-medium">
+              collision detection in the 2D Platform Game
+            </span>{" "}
             - Stage:{" "}
             <span
               className={`inline-flex items-center mx-0.5 px-2 py-0.5 rounded text-[0.65rem] font-medium border ${STAGE_COLOURS.Construction}`}
             >
               Construction
             </span>{" "}
-            · Scenario: <span className="text-[#e8eaf0]">Tinkerer</span>
+            · Step:{" "}
+            <span className="text-[#e8eaf0]">Mechanics Implementation</span>
           </p>
           <p className="text-xs text-[#7b8399]">
-            That single statement gives your us a timestamped, structured record
-            of your contribution - far more precise than a weekly update email.
+            That single statement gives a timestamped, structured record of your
+            contribution - far more precise than a weekly update email.
           </p>
         </div>
       </div>
@@ -337,39 +363,6 @@ const Home = ({ onNavigate }) => {
 
       <div className="h-px bg-white/6" />
 
-      {/* Learner Scenarios */}
-      <div className="flex flex-col gap-4 max-w-2xl">
-        <div className="flex flex-col gap-1">
-          <p className="text-[0.68rem] font-medium tracking-[0.14em] uppercase text-[#7b8399]">
-            Learner Scenarios
-          </p>
-          <h2 className="font-display text-xl text-[#e8eaf0]">
-            How are you approaching the work?
-          </h2>
-        </div>
-        <p className="text-sm text-[#7b8399] leading-relaxed">
-          Each time you submit a statement you'll select a learner scenario - a
-          short description of your working style at that moment. This helps
-          build a picture of how different students tackle the same project over
-          time.
-        </p>
-        <div className="flex flex-col gap-3">
-          {SCENARIOS.map((s) => (
-            <div
-              key={s.id}
-              className="px-4 py-3 bg-white/2 border border-white/5 rounded-lg flex flex-col gap-1"
-            >
-              <p className="text-sm font-medium text-[#e8eaf0]">{s.label}</p>
-              <p className="text-xs text-[#7b8399] leading-relaxed">
-                {s.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="h-px bg-white/6" />
-
       {/* Courses */}
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-1">
@@ -377,7 +370,7 @@ const Home = ({ onNavigate }) => {
             Your courses
           </p>
           <h2 className="font-display text-xl text-[#e8eaf0]">
-            Projects, stages and available verbs
+            Projects, steps, stages and available verbs
           </h2>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
