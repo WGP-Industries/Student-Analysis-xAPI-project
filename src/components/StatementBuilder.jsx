@@ -8,6 +8,30 @@ import api from "../configs/api";
 
 const NEW_GROUP_SENTINEL = "__new__";
 
+const STAGES = [
+  {
+    id: "Planning",
+    description: "Defining goals, tasks, and approach before starting work.",
+  },
+  {
+    id: "Exploration",
+    description:
+      "Investigating ideas, tools, or resources to inform decisions.",
+  },
+  {
+    id: "Construction",
+    description: "Actively building, coding, or implementing the solution.",
+  },
+  {
+    id: "Testing",
+    description: "Verifying correctness, debugging, and validating outcomes.",
+  },
+  {
+    id: "Reflection",
+    description: "Reviewing what was learned and how the process went.",
+  },
+];
+
 const selectClass = (focused) =>
   `w-full bg-white/[0.03] border rounded-lg px-4 py-3 text-sm text-[#e8eaf0] outline-none appearance-none transition-all duration-200 cursor-pointer ${
     focused
@@ -305,24 +329,23 @@ const StatementBuilder = () => {
     setIsLoading(true);
     try {
       await sendXAPI("custom", {
-        // Verb 
-        verbId:      verbObj.uri,
+        // Verb
+        verbId: verbObj.uri,
         verbDisplay: verbObj.display,
 
         // Course metadata (drives category + parent URIs)
         courseCode,
-        courseName:        selectedCourse.name,
+        courseName: selectedCourse.name,
         courseDescription: selectedCourse.description,
 
-        // Artifact — the object being acted upon 
+        // Artifact — the object being acted upon
         // artifactName becomes the object's display name.
         artifactName: description || `${verbObj.display}: ${selectedStep}`,
-        problemStep:  selectedStep,
-        description:  description || verbObj.description,
+        problemStep: selectedStep,
+        description: description || verbObj.description,
 
         // ── Pedagogical metadata ──────────────────────────────────────────────
         stage: selectedStage,
-
       });
       toast.success("Statement sent!");
       setDescription("");
@@ -487,8 +510,14 @@ const StatementBuilder = () => {
                 </option>
               ))}
             </select>
+
             <Chevron />
           </div>
+          {selectedStage && (
+            <p className="text-xs text-[#c3cee9] font-bold leading-relaxed mt-1">
+              {STAGES.find((s) => s.id === selectedStage)?.description}
+            </p>
+          )}
         </div>
 
         {/* Project Step */}
@@ -515,6 +544,11 @@ const StatementBuilder = () => {
             </select>
             <Chevron />
           </div>
+          {selectedStep && (
+            <p className="text-xs text-[#c3cee9] font-bold leading-relaxed mt-1">
+              {steps.find((s) => s.id === selectedStep)?.description}
+            </p>
+          )}
         </div>
 
         {/* Verb */}
