@@ -143,9 +143,7 @@ const Login = () => {
             <h2 className="font-display text-[1.85rem] font-normal text-[#e8eaf0] mb-1">
               Welcome back.
             </h2>
-            <p className="text-sm text-[#7b8399]">
-              Sign in with your email or username
-            </p>
+            <p className="text-sm text-[#7b8399]">Sign in with username</p>
           </header>
 
           <form
@@ -155,7 +153,7 @@ const Login = () => {
           >
             {/* Identifier */}
             <div className="flex flex-col gap-2">
-              <Label htmlFor="identifier">Email or Username</Label>
+              <Label htmlFor="identifier">Username</Label>
               <Input
                 id="identifier"
                 name="identifier"
@@ -164,7 +162,7 @@ const Login = () => {
                 onChange={handleChange}
                 onFocus={focus("identifier")}
                 onBlur={blur}
-                placeholder="john@example.com or john.doe"
+                placeholder="student"
                 required
                 isFocused={focused === "identifier"}
                 autoComplete="username"

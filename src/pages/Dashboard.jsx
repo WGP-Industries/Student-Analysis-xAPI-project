@@ -51,10 +51,6 @@ const Dashboard = () => {
             <User className="w-4 h-4" />
             {user.username}
           </span>
-          <span className="hidden sm:flex items-center gap-2">
-            <span>✉️</span>
-            {user.email}
-          </span>
           {enrollmentSummary && (
             <span className="hidden md:block text-[#4a5168]">
               {enrollmentSummary}
