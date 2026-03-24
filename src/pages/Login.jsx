@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import api from "../configs/api";
 import { login } from "../store/features/authSlice";
+import { Info, InfoIcon } from "lucide-react";
 
 const STATS = [
   { value: "20", label: "Unique Verbs" },
@@ -185,6 +186,23 @@ const Login = () => {
                 isFocused={focused === "password"}
                 autoComplete="current-password"
               />
+              {/* Default password callout */}
+              <div className="mt-1 flex gap-3 rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-3">
+                <div className="mt-0.5 shrink-0">
+                  <Info className="w-3.5 h-3.5 text-amber-400/70" />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <p className="text-[0.72rem] font-medium text-amber-300/80 tracking-wide uppercase">
+                    Default password
+                  </p>
+                  <code className="inline-block font-mono text-sm tracking-widest text-[#e8eaf0] bg-white/8 border border-white/10 px-3 py-1.5 rounded-lg w-fit">
+                    studentUWi@1234
+                  </code>
+                  <p className="text-[0.72rem] text-[#7b8399] leading-relaxed">
+                    Please change password after login.
+                  </p>
+                </div>
+              </div>
             </div>
 
             <button
