@@ -165,7 +165,7 @@ The default tab after login. Contains:
 2. Select a group. Groups are fetched dynamically from `GET /api/courses/:courseCode/groups`. The selection is saved immediately to the backend as an enrollment.
 3. Select a pedagogical stage (Planning, Exploration, Construction, Testing, Reflection).
 4. Select a project step specific to the chosen course (e.g. Mechanics Implementation for COMP 3609, Data Preparation for COMP 3610).
-5. Select a verb describing the activity performed. Each verb shows its associated stage badge and a plain-English description.
+5. Select a verb describing the activity performed. Each verb shows a plain-English description of what it represents.
 6. Optionally add a free-text description for additional context.
 7. Submit. The statement is built client-side, sent to `POST /api/xapi`, stored in the database, and forwarded to the LRS.
 
