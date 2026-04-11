@@ -1,6 +1,7 @@
 # Praxis — Frontend
 
 **Frontend:** https://github.com/WGP-Industries/Student-Analysis-xAPI-project
+
 **Backend:** https://github.com/WGP-Industries/INFO3604-Project-Backend
 
 A React-based web application that allows students to record and review xAPI learning statements across two courses — COMP 3609 (Game Programming) and COMP 3610 (Big Data Analytics). An administrative interface provides full visibility into user activity, enrollments, statement data, and bulk import tooling.
