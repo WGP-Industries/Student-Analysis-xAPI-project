@@ -1,10 +1,10 @@
-# Praxis — Frontend
+# Praxis - Frontend
 
 **Frontend:** https://github.com/WGP-Industries/Student-Analysis-xAPI-project
 
 **Backend:** https://github.com/WGP-Industries/INFO3604-Project-Backend
 
-A React-based web application that allows students to record and review xAPI learning statements across two courses — COMP 3609 (Game Programming) and COMP 3610 (Big Data Analytics). An administrative interface provides full visibility into user activity, enrollments, statement data, and bulk import tooling.
+A React-based web application that allows students to record and review xAPI learning statements across two courses - COMP 3609 (Game Programming) and COMP 3610 (Big Data Analytics). An administrative interface provides full visibility into user activity, enrollments, statement data, and bulk import tooling.
 
 ---
 
@@ -140,9 +140,9 @@ On every page load, `App.jsx` checks for a JWT in `localStorage` and calls `GET 
 
 Route guards are implemented as wrapper components in `App.jsx`:
 
-- `ProtectedRoute` — waits for rehydration, then redirects to `/login` if unauthenticated
-- `ProtectedAdmin` — waits for rehydration, then redirects non-admins away from `/admin`
-- `PublicRoute` — redirects already-authenticated users away from `/login` to their landing page
+- `ProtectedRoute` - waits for rehydration, then redirects to `/login` if unauthenticated
+- `ProtectedAdmin` - waits for rehydration, then redirects non-admins away from `/admin`
+- `PublicRoute` - redirects already-authenticated users away from `/login` to their landing page
 
 ---
 
@@ -211,9 +211,9 @@ Fetches all statements regardless of enrollment scope from `GET /api/xapi/admin/
 
 Bulk data entry via CSV upload with drag-and-drop support.
 
-**Groups import** — Upload a CSV with a single `name` column to create multiple groups for a course at once. Duplicate group names are skipped automatically.
+**Groups import** - Upload a CSV with a single `name` column to create multiple groups for a course at once. Duplicate group names are skipped automatically.
 
-**Enrollments import** — Upload a flexible CSV to create student accounts and enroll them in one or both courses simultaneously. Missing fields are derived automatically:
+**Enrollments import** - Upload a flexible CSV to create student accounts and enroll them in one or both courses simultaneously. Missing fields are derived automatically:
 
 | Missing field | Derivation                |
 | ------------- | ------------------------- |
